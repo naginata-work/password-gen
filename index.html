@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Generator / パスワード生成ツール</title>
+<meta name="description" content="安全な乱数を使ったパスワード生成ツール。ランダム文字列モードと覚えやすい単語モードの2種類。">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4214020669195548"
+     crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #0e1512; --card: #17211c; --text: #eef7f1; --sub: #8fa89a;
+    --accent: #4ade80; --accent2: #60a5fa; --border: #263731; --danger: #f87171; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Hiragino Kaku Gothic ProN", "Segoe UI", Arial, sans-serif;
+    background: var(--bg); color: var(--text); padding: 16px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  .top-row { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+  .lang-btn { background: none; border: 1px solid var(--border); color: var(--sub); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 21px; text-align: center; margin: 4px 0 4px; }
+  .lead { text-align: center; color: var(--sub); font-size: 13px; margin-bottom: 18px; line-height: 1.6; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tabs button {
+    flex: 1; padding: 9px; border: 1px solid var(--border); border-radius: 8px;
+    background: none; color: var(--sub); font-size: 13px; cursor: pointer;
+  }
+  .tabs button.active { background: var(--accent); color: #06210f; border-color: var(--accent); font-weight: bold; }
+  .output-box {
+    background: #0b110d; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; font-size: 18px; font-family: monospace; word-break: break-all;
+    text-align: center; margin-bottom: 10px; min-height: 28px;
+  }
+  .strength-bar-outer { height: 8px; background: #0b110d; border-radius: 5px; overflow: hidden; margin-bottom: 4px; }
+  .strength-bar-inner { height: 100%; width: 0%; background: var(--danger); transition: width 0.2s; }
+  .strength-label { font-size: 12px; color: var(--sub); text-align: center; margin-bottom: 12px; }
+  label { display: block; font-size: 13px; color: var(--sub); margin-bottom: 4px; }
+  input[type="range"], input[type="number"] { width: 100%; }
+  .field { margin-bottom: 10px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; margin-bottom: 6px; }
+  .checks label { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
+  .gen-btn, .copy-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 6px; }
+  .gen-btn { background: var(--accent); color: #06210f; }
+  .copy-btn { background: none; border: 1px solid var(--border); color: var(--text); font-weight: normal; font-size: 13.5px; }
+  .footer-links { text-align: center; font-size: 12px; color: var(--sub); margin-top: 4px; line-height: 1.8; }
+  .footer-links a { color: var(--accent2); text-decoration: none; }
+  .note { font-size: 11px; color: var(--sub); margin-top: 8px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row"><button class="lang-btn" id="langBtn">EN</button></div>
+  <h1 id="title">🔐 パスワード生成ツール</h1>
+  <p class="lead" id="lead">安全な乱数を使って、その場でパスワードを生成します。</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button id="tabChar" class="active"></button>
+      <button id="tabPhrase"></button>
+    </div>
+
+    <div class="output-box" id="output">-</div>
+    <div class="strength-bar-outer"><div class="strength-bar-inner" id="strengthBar"></div></div>
+    <div class="strength-label" id="strengthLabel"></div>
+
+    <div id="charOptions">
+      <div class="field">
+        <label id="lengthLabel">長さ: <span id="lengthValue">16</span></label>
+        <input type="range" id="length" min="6" max="64" value="16">
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="useUpper" checked> <span id="upperLabel"></span></label>
+        <label><input type="checkbox" id="useLower" checked> <span id="lowerLabel"></span></label>
+        <label><input type="checkbox" id="useNumbers" checked> <span id="numbersLabel"></span></label>
+        <label><input type="checkbox" id="useSymbols"> <span id="symbolsLabel"></span></label>
+      </div>
+    </div>
+
+    <div id="phraseOptions" style="display:none;">
+      <div class="field">
+        <label id="wordCountLabel">単語数: <span id="wordCountValue">4</span></label>
+        <input type="range" id="wordCount" min="3" max="8" value="4">
+      </div>
+    </div>
+
+    <button class="gen-btn" id="genBtn"></button>
+    <button class="copy-btn" id="copyBtn"></button>
+    <p class="note" id="note"></p>
+  </div>
+
+  <p class="footer-links" id="footerLinks"></p>
+</div>
+
+<script>
+  const WORDS = ['apple','anchor','arrow','autumn','basket','beacon','bicycle','blanket','bramble','breeze',
+    'canyon','castle','cedar','cinder','cloud','clover','comet','copper','coral','cotton',
+    'crane','crimson','crystal','dawn','delta','desert','dolphin','dragon','ember','falcon',
+    'feather','fern','forest','fossil','garden','glacier','granite','gravel','harbor','hazel',
+    'hollow','honey','hunter','island','ivory','jasper','jungle','kettle','ladder','lagoon',
+    'lantern','laurel','lemon','lighthouse','lily','lumber','maple','marble','meadow','mineral',
+    'mirror','mist','mountain','muffin','nectar','nickel','nimbus','oak','ocean','olive',
+    'onyx','orange','orchid','otter','oyster','panda','pebble','pepper','pine','planet',
+    'plum','pond','poppy','prairie','quartz','quiver','rabbit','raven','reef','ridge',
+    'river','rocket','saddle','sage','salmon','sandal','sapphire','scarlet','shadow','shell',
+    'silver','sky','sparrow','spruce','stone','storm','summit','sunset','swan','tangerine',
+    'thistle','thunder','tiger','timber','topaz','trail','tulip','tundra','turtle','umbrella',
+    'valley','velvet','violet','walnut','warbler','willow','window','winter','wolf','zephyr'];
+
+  const I18N = {
+    ja: {
+      title: '🔐 パスワード生成ツール',
+      lead: '安全な乱数を使って、その場でパスワードを生成します。',
+      tabChar: 'ランダム文字列',
+      tabPhrase: '覚えやすい単語型',
+      lengthLabel: '長さ',
+      upperLabel: '大文字(A-Z)',
+      lowerLabel: '小文字(a-z)',
+      numbersLabel: '数字(0-9)',
+      symbolsLabel: '記号(!@#等)',
+      wordCountLabel: '単語数',
+      genBtn: '生成する',
+      copyBtn: 'コピーする',
+      copied: 'コピーしました!',
+      strength: ['弱い', '普通', '強い', '非常に強い'],
+      needOneOption: '文字種を1つ以上選んでください',
+      note: '※このツールは入力・生成した内容をブラウザ内だけで処理し、外部に送信することはありません。',
+      footerLinks: '他のツールも作っています → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">割り勘計算機</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">反応速度テスト</a> / <a href="https://naginata-work.github.io/countdown/" target="_blank" rel="noopener">カウントダウン</a>'
+    },
+    en: {
+      title: '🔐 Password Generator',
+      lead: 'Generate a secure password locally, using cryptographically strong randomness.',
+      tabChar: 'Random characters',
+      tabPhrase: 'Memorable passphrase',
+      lengthLabel: 'Length',
+      upperLabel: 'Uppercase (A-Z)',
+      lowerLabel: 'Lowercase (a-z)',
+      numbersLabel: 'Numbers (0-9)',
+      symbolsLabel: 'Symbols (!@# etc.)',
+      wordCountLabel: 'Word count',
+      genBtn: 'Generate',
+      copyBtn: 'Copy',
+      copied: 'Copied!',
+      strength: ['Weak', 'Medium', 'Strong', 'Very strong'],
+      needOneOption: 'Please select at least one character type',
+      note: '*Everything here runs locally in your browser. Nothing you generate is sent anywhere.',
+      footerLinks: 'Also made these → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">Bill Splitter</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">Reaction Speed Test</a> / <a href="https://naginata-work.github.io/countdown/" target="_blank" rel="noopener">Countdown Timer</a>'
+    }
+  };
+
+  function loadLang() { try { return localStorage.getItem('pwGenLang'); } catch (e) { return null; } }
+  function saveLang(l) { try { localStorage.setItem('pwGenLang', l); } catch (e) {} }
+  let lang = loadLang() === 'en' ? 'en' : 'ja';
+  function t() { return I18N[lang]; }
+
+  let mode = 'char';
+  let currentOutput = '';
+
+  function secureRandomInt(maxExclusive) {
+    const arr = new Uint32Array(1);
+    const limit = Math.floor(0xFFFFFFFF / maxExclusive) * maxExclusive;
+    let val;
+    do { crypto.getRandomValues(arr); val = arr[0]; } while (val >= limit);
+    return val % maxExclusive;
+  }
+
+  function generateCharPassword() {
+    let pool = '';
+    if (document.getElementById('useUpper').checked) pool += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    if (document.getElementById('useLower').checked) pool += 'abcdefghijkmnpqrstuvwxyz';
+    if (document.getElementById('useNumbers').checked) pool += '23456789';
+    if (document.getElementById('useSymbols').checked) pool += '!@#$%^&*()-_=+';
+    if (pool.length === 0) { alert(t().needOneOption); return null; }
+    const length = parseInt(document.getElementById('length').value, 10);
+    let result = '';
+    for (let i = 0; i < length; i++) result += pool[secureRandomInt(pool.length)];
+    const bits = Math.log2(pool.length) * length;
+    return { text: result, bits };
+  }
+
+  function generatePassphrase() {
+    const count = parseInt(document.getElementById('wordCount').value, 10);
+    const parts = [];
+    for (let i = 0; i < count; i++) parts.push(WORDS[secureRandomInt(WORDS.length)]);
+    const numberSuffix = secureRandomInt(90) + 10;
+    const text = parts.join('-') + '-' + numberSuffix;
+    const bits = Math.log2(WORDS.length) * count + Math.log2(90);
+    return { text, bits };
+  }
+
+  function strengthTier(bits) {
+    if (bits < 40) return 0;
+    if (bits < 60) return 1;
+    if (bits < 80) return 2;
+    return 3;
+  }
+
+  function generate() {
+    const result = mode === 'char' ? generateCharPassword() : generatePassphrase();
+    if (!result) return;
+    currentOutput = result.text;
+    document.getElementById('output').textContent = result.text;
+    const tier = strengthTier(result.bits);
+    const pct = Math.min(100, (tier + 1) * 25);
+    const bar = document.getElementById('strengthBar');
+    bar.style.width = pct + '%';
+    bar.style.background = ['#f87171', '#fbbf24', '#4ade80', '#22d3ee'][tier];
+    document.getElementById('strengthLabel').textContent = t().strength[tier];
+  }
+
+  document.getElementById('genBtn').addEventListener('click', generate);
+  document.getElementById('length').addEventListener('input', (e) => {
+    document.getElementById('lengthValue').textContent = e.target.value;
+  });
+  document.getElementById('wordCount').addEventListener('input', (e) => {
+    document.getElementById('wordCountValue').textContent = e.target.value;
+  });
+
+  document.getElementById('tabChar').addEventListener('click', () => {
+    mode = 'char';
+    document.getElementById('tabChar').classList.add('active');
+    document.getElementById('tabPhrase').classList.remove('active');
+    document.getElementById('charOptions').style.display = 'block';
+    document.getElementById('phraseOptions').style.display = 'none';
+    generate();
+  });
+  document.getElementById('tabPhrase').addEventListener('click', () => {
+    mode = 'phrase';
+    document.getElementById('tabPhrase').classList.add('active');
+    document.getElementById('tabChar').classList.remove('active');
+    document.getElementById('charOptions').style.display = 'none';
+    document.getElementById('phraseOptions').style.display = 'block';
+    generate();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    if (!currentOutput) return;
+    try {
+      await navigator.clipboard.writeText(currentOutput);
+      const btn = document.getElementById('copyBtn');
+      const original = btn.textContent;
+      btn.textContent = t().copied;
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    } catch {
+      alert(currentOutput);
+    }
+  });
+
+  function renderStaticText() {
+    document.getElementById('title').textContent = t().title;
+    document.getElementById('lead').textContent = t().lead;
+    document.getElementById('tabChar').textContent = t().tabChar;
+    document.getElementById('tabPhrase').textContent = t().tabPhrase;
+    document.getElementById('lengthLabel').innerHTML = t().lengthLabel + ': <span id="lengthValue">' + document.getElementById('length').value + '</span>';
+    document.getElementById('upperLabel').textContent = t().upperLabel;
+    document.getElementById('lowerLabel').textContent = t().lowerLabel;
+    document.getElementById('numbersLabel').textContent = t().numbersLabel;
+    document.getElementById('symbolsLabel').textContent = t().symbolsLabel;
+    document.getElementById('wordCountLabel').innerHTML = t().wordCountLabel + ': <span id="wordCountValue">' + document.getElementById('wordCount').value + '</span>';
+    document.getElementById('genBtn').textContent = t().genBtn;
+    document.getElementById('copyBtn').textContent = t().copyBtn;
+    document.getElementById('note').textContent = t().note;
+    document.getElementById('footerLinks').innerHTML = t().footerLinks;
+  }
+
+  document.getElementById('langBtn').addEventListener('click', () => {
+    lang = lang === 'ja' ? 'en' : 'ja';
+    saveLang(lang);
+    document.getElementById('langBtn').textContent = lang === 'ja' ? 'EN' : 'JA';
+    renderStaticText();
+  });
+
+  document.getElementById('langBtn').textContent = lang === 'ja' ? 'EN' : 'JA';
+  renderStaticText();
+  generate();
+</script>
+</body>
+</html>
