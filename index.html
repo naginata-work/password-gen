@@ -92,7 +92,25 @@
     <p class="note" id="note"></p>
   </div>
 
+  <div class="card" style="font-size:13px; line-height:1.9; color:var(--sub);">
+    <h2 id="aboutTitle" style="font-size:15px; color:var(--text); margin:0 0 8px;"></h2>
+    <p id="aboutBody1" style="margin:0 0 10px;"></p>
+    <p id="aboutBody2" style="margin:0;"></p>
+  </div>
+
+  <div class="card" style="font-size:13px; line-height:1.9; color:var(--sub);">
+    <h2 id="faqTitle" style="font-size:15px; color:var(--text); margin:0 0 10px;"></h2>
+    <p id="faq1Q" style="margin:0 0 4px; color:var(--text); font-weight:bold;"></p>
+    <p id="faq1A" style="margin:0 0 12px;"></p>
+    <p id="faq2Q" style="margin:0 0 4px; color:var(--text); font-weight:bold;"></p>
+    <p id="faq2A" style="margin:0;"></p>
+  </div>
+
   <p class="footer-links" id="footerLinks"></p>
+  <p style="text-align:center; font-size:11px; color:var(--sub); margin-top:4px;">
+    <a href="https://naginata-work.github.io/" style="color:var(--sub);" id="allToolsLink"></a> ・
+    <a href="https://naginata-work.github.io/privacy.html" style="color:var(--sub);" id="privacyLink"></a>
+  </p>
 </div>
 
 <script>
@@ -128,7 +146,15 @@
       strength: ['弱い', '普通', '強い', '非常に強い'],
       needOneOption: '文字種を1つ以上選んでください',
       note: '※このツールは入力・生成した内容をブラウザ内だけで処理し、外部に送信することはありません。',
-      footerLinks: '他のツールも作っています → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">割り勘計算機</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">反応速度テスト</a> / <a href="https://naginata-work.github.io/countdown/" target="_blank" rel="noopener">カウントダウン</a>'
+      footerLinks: '他のツールも作っています → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">割り勘計算機</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">反応速度テスト</a> / <a href="https://naginata-work.github.io/countdown/" target="_blank" rel="noopener">カウントダウン</a>',
+      aboutTitle: '安全なパスワードについて',
+      aboutBody1: '「password123」のような単純なパスワードは、専用のソフトを使えば数秒で破られてしまいます。安全性を高めるには、文字種を増やす・長さを伸ばす・使い回さない、の3点が基本です。このツールでは、Math.random()のような予測されやすい乱数ではなく、暗号技術にも使われるcrypto.getRandomValues()を使ってパスワードを生成しています。',
+      aboutBody2: '「ランダム文字列」モードは総当たり攻撃に強く、システムへの登録用に向いています。「覚えやすい単語型」モードは、複数の単語をつないで作るパスフレーズ方式で、強度を保ちながら人間が記憶・入力しやすいのが特徴です。',
+      faqTitle: 'よくある質問',
+      faq1Q: '生成したパスワードはどこかに送信・保存される?',
+      faq1A: 'されません。生成処理はすべてブラウザの中だけで完結しており、このページを閉じれば生成結果はどこにも残りません。',
+      faq2Q: '「強度」の判定はどう決まっているの?',
+      faq2A: '文字種の数とパスワードの長さから、情報エントロピー(ビット数)を計算し、40ビット未満を「弱い」、80ビット以上を「非常に強い」とする一般的な基準で分類しています。',
     },
     en: {
       title: '🔐 Password Generator',
@@ -147,7 +173,15 @@
       strength: ['Weak', 'Medium', 'Strong', 'Very strong'],
       needOneOption: 'Please select at least one character type',
       note: '*Everything here runs locally in your browser. Nothing you generate is sent anywhere.',
-      footerLinks: 'Also made these → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">Bill Splitter</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">Reaction Speed Test</a> / <a href="https://naginata-work.github.io/countdown/" target="_blank" rel="noopener">Countdown Timer</a>'
+      footerLinks: 'Also made these → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">Bill Splitter</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">Reaction Speed Test</a> / <a href="https://naginata-work.github.io/countdown/" target="_blank" rel="noopener">Countdown Timer</a>',
+      aboutTitle: 'About secure passwords',
+      aboutBody1: 'A simple password like "password123" can be cracked by dedicated software in seconds. Real security comes from three things: more character variety, more length, and never reusing the same password. This tool uses crypto.getRandomValues() — the same class of randomness used in cryptography — rather than predictable functions like Math.random().',
+      aboutBody2: '"Random characters" mode resists brute-force attacks well and suits most account signups. "Memorable passphrase" mode chains several words together — a format that stays strong while being much easier for a human to remember and type.',
+      faqTitle: 'FAQ',
+      faq1Q: 'Is the generated password sent or stored anywhere?',
+      faq1A: "No. Everything happens locally in your browser, and nothing is kept once you close this page.",
+      faq2Q: 'How is the strength rating calculated?',
+      faq2A: "It's based on information entropy (in bits), calculated from the character pool size and password length — under 40 bits is rated weak, and 80 bits or more is rated very strong, following common security guidelines.",
     }
   };
 
@@ -264,6 +298,18 @@
     document.getElementById('copyBtn').textContent = t().copyBtn;
     document.getElementById('note').textContent = t().note;
     document.getElementById('footerLinks').innerHTML = t().footerLinks;
+    document.getElementById('aboutTitle').textContent = t().aboutTitle;
+    document.getElementById('aboutBody1').textContent = t().aboutBody1;
+    document.getElementById('aboutBody2').textContent = t().aboutBody2;
+    document.getElementById('faqTitle').textContent = t().faqTitle;
+    document.getElementById('faq1Q').textContent = t().faq1Q;
+    document.getElementById('faq1A').textContent = t().faq1A;
+    document.getElementById('faq2Q').textContent = t().faq2Q;
+    document.getElementById('faq2A').textContent = t().faq2A;
+    document.getElementById('allToolsLink').textContent = lang === 'ja' ? '他のツール一覧' : 'All tools';
+    document.getElementById('allToolsLink').href = 'https://naginata-work.github.io/';
+    document.getElementById('privacyLink').textContent = lang === 'ja' ? 'プライバシーポリシー' : 'Privacy policy';
+    document.getElementById('privacyLink').href = 'https://naginata-work.github.io/privacy.html';
   }
 
   document.getElementById('langBtn').addEventListener('click', () => {
